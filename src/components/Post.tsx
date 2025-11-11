@@ -1,15 +1,16 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { Post } from '../types';
+import { Post as PostType } from '../types'; // Rename the import
 import UserAvatar from './UserAvatar';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
 interface PostProps {
-  post: Post;
+  post: PostType;
   onLike?: (postId: string) => void;
   onComment?: (postId: string) => void;
 }
 
-export default function Post({ post, onLike, onComment }: PostProps) {
+// Rename the component function to avoid conflict
+export default function PostItem({ post, onLike, onComment }: PostProps) {
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleDateString('en-US', { 
