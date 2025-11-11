@@ -1,5 +1,5 @@
 import { Text } from 'react-native';
 
-export default function PostPage(){
-  return <Text>New</Text>
+export default function PostScreen(){
+  return <Text>Profile</Text>
 }
