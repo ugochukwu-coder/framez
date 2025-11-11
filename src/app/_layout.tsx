@@ -1,28 +1,10 @@
-import { Stack, useRouter, useSegments } from 'expo-router';
-import { View, Text } from 'react-native';
+import { Stack } from 'expo-router';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
-import { useEffect } from 'react';
-import '../global.css';
+import { View, Text } from 'react-native';
+import '../../global.css';
 
-// Component to handle auth routing
 function RootLayoutNav() {
   const { user, isLoading } = useAuth();
-  const segments = useSegments();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (isLoading) return;
-
-    const inAuthGroup = segments[0] === '(auth)';
-
-    if (!user && !inAuthGroup) {
-      // Redirect to login if not authenticated
-      router.replace('/(auth)/login');
-    } else if (user && inAuthGroup) {
-      // Redirect to tabs if authenticated and in auth group
-      router.replace('/(tabs)');
-    }
-  }, [user, isLoading, segments]);
 
   if (isLoading) {
     return (
@@ -34,8 +16,11 @@ function RootLayoutNav() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
+      {user ? (
+        <Stack.Screen name="(tabs)" />
+      ) : (
+        <Stack.Screen name="(auth)" />
+      )}
     </Stack>
   );
 }

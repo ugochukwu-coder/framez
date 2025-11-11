@@ -1,130 +1,53 @@
-// src/contexts/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthState } from '../types';
-import { Session } from '@supabase/supabase-js';
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
+const mockUser: User = {
+  id: '1',
+  username: 'demo_user',
+  name: 'Demo User', 
+  avatar_url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+  email: 'demo@framez.com'
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(mockUser); 
+  const [isLoading, setIsLoading] = useState(false);
 
+  // Remove the automatic session check for now
   useEffect(() => {
-    // Check active sessions on app start
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-      setIsLoading(false);
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user && event === 'SIGNED_IN') {
-        await fetchUserProfile(session.user.id);
-      } else if (event === 'SIGNED_OUT') {
-        setUser(null);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    setIsLoading(false);
   }, []);
 
-  const fetchUserProfile = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        return;
-      }
-
-      if (data) {
-        setUser({
-          id: data.id,
-          username: data.username,
-          name: data.full_name || data.username,
-          avatar_url: data.avatar_url || '',
-          email: data.email,
-        });
-      }
-    } catch (error) {
-      console.error('Error in fetchUserProfile:', error);
-    }
-  };
-
   const signIn = async (email: string, password: string) => {
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error signing in:', error);
-      throw error;
-    }
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setUser(mockUser); // This should persist
+    setIsLoading(false);
   };
 
   const signUp = async (email: string, password: string, username: string) => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            username,
-          },
-        },
-      });
-      
-      if (error) throw error;
-      
-      // Create user profile after signup
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: data.user.id,
-              username,
-              email,
-              full_name: username,
-              avatar_url: '',
-            },
-          ]);
-
-        if (profileError) throw profileError;
-      }
-    } catch (error) {
-      console.error('Error signing up:', error);
-      throw error;
-    }
+    setIsLoading(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setUser({
+      ...mockUser,
+      username,
+      name: username,
+      email
+    });
+    setIsLoading(false);
   };
 
   const signOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      setUser(null);
-    } catch (error) {
-      console.error('Error signing out:', error);
-      throw error;
-    }
+    setUser(null);
   };
 
   const value: AuthState = {
     user,
     isLoading,
     signIn,
-    signUp,
+    signUp, 
     signOut,
   };
 

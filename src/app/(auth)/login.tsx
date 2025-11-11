@@ -4,8 +4,8 @@ import { Link, useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('demo@framez.com');
+  const [password, setPassword] = useState('password');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
   const router = useRouter();
@@ -29,9 +29,10 @@ export default function LoginScreen() {
 
   return (
     <View className="flex-1 bg-white px-6 justify-center">
-      <Text className="text-3xl font-bold text-gray-900 mb-8 text-center">
-        Welcome Back
+      <Text className="text-3xl font-bold text-gray-900 mb-2 text-center">
+        Welcome to Framez
       </Text>
+      <Text className="text-gray-600 text-center mb-8">Share your moments</Text>
 
       <View className="space-y-4">
         <TextInput
