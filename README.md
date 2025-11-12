@@ -5,7 +5,7 @@ A modern mobile application built with React Native and Expo.
 ## 🚀 Live Demo
 
 Test the app instantly in your browser:  
-**[https://appetize.io/app/b_tqb3qmrnpxbaeeh4wxetz3bfi4](https://appetize.io/app/b_tqb3qmrnpxbaeeh4wxetz3bfi4)**
+https://appetize.io/app/b_mbtgy7kvipetkzei46sfnljqcu
 
 > 💡 **No download required!** The demo runs directly in your browser using Appetize.io
 
