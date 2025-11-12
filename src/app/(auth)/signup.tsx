@@ -17,10 +17,16 @@ export default function SignupScreen() {
       return;
     }
 
+    if (password.length < 6) {
+      Alert.alert('Error', 'Password must be at least 6 characters');
+      return;
+    }
+
     setIsLoading(true);
     try {
       await signUp(email, password, username);
-      router.replace('/(tabs)');
+      Alert.alert('Success', 'Account created! Please check your email for verification.');
+      router.push('/(auth)/sign-in');
     } catch (error: any) {
       Alert.alert('Signup Failed', error.message);
     } finally {
@@ -30,9 +36,10 @@ export default function SignupScreen() {
 
   return (
     <View className="flex-1 bg-white px-6 justify-center">
-      <Text className="text-3xl font-bold text-gray-900 mb-8 text-center">
+      <Text className="text-3xl font-bold text-gray-900 mb-2 text-center">
         Create Account
       </Text>
+      <Text className="text-gray-600 text-center mb-8">Join Framez today</Text>
 
       <View className="space-y-4">
         <TextInput
@@ -42,7 +49,7 @@ export default function SignupScreen() {
           onChangeText={setUsername}
           autoCapitalize="none"
         />
-
+        
         <TextInput
           className="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900"
           placeholder="Email"
@@ -66,13 +73,13 @@ export default function SignupScreen() {
           disabled={isLoading}
         >
           <Text className="text-white text-center font-semibold text-lg">
-            {isLoading ? 'Creating Account...' : 'Create Account'}
+            {isLoading ? 'Creating Account...' : 'Sign Up'}
           </Text>
         </TouchableOpacity>
 
         <View className="flex-row justify-center mt-6">
           <Text className="text-gray-600">Already have an account? </Text>
-          <Link href="/(auth)/login" asChild>
+          <Link href="/(auth)/sign-in" asChild>
             <TouchableOpacity>
               <Text className="text-black font-semibold">Sign In</Text>
             </TouchableOpacity>

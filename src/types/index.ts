@@ -1,10 +1,10 @@
-// src/types/index.ts
 export interface User {
   id: string;
-  username: string;
+  email: string;
   name: string;
-  avatar_url: string;
-  email?: string;
+  username: string;
+  avatar_url?: string | null;
+  bio?: string;
 }
 
 export interface Post {
@@ -23,9 +23,10 @@ export interface AuthState {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, username: string) => Promise<void>;
   signOut: () => Promise<void>;
+  updateUser: (userData: Partial<User>) => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
-// Add database operation types
 export interface CreatePostData {
   image_url: string;
   caption: string;
@@ -36,4 +37,5 @@ export interface UpdateProfileData {
   username?: string;
   full_name?: string;
   avatar_url?: string;
+  bio?: string;
 }

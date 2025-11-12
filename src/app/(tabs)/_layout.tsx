@@ -1,29 +1,44 @@
 import { Tabs } from 'expo-router';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
-
 export default function TabLayout() {
   return (
-    <Tabs screenOptions={{ tabBarActiveTintColor: 'black', tabBarShowLabel: false }}>
-      <Tabs.Screen 
-        name="index" 
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: '#3B82F6',
+        tabBarInactiveTintColor: '#6B7280',
+        tabBarStyle: {
+          backgroundColor: 'white',
+          borderTopColor: '#E5E7EB',
+        },
+        headerShown: false,
+      }}
+    >
+      <Tabs.Screen
+        name="index"
         options={{
-          headerTitle: 'For you',
-          tabBarIcon: ({ color }) => <FontAwesome name="home" size={27} color={color} />,
+          title: 'Feed',
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="home" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="new" 
+        name="new"
         options={{
-          headerTitle: 'Create post',
-          tabBarIcon: ({ color }) => <FontAwesome name="plus-square-o" size={27} color={color} />,
+          title: 'Create',
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="plus-square" size={size} color={color} />
+          ),
         }}
       />
       <Tabs.Screen
-        name="profile" 
+        name="profile"
         options={{
-          headerTitle: 'Profile',
-          tabBarIcon: ({ color }) => <FontAwesome name="user" size={27} color={color} />,
+          title: 'Profile',
+          tabBarIcon: ({ color, size }) => (
+            <FontAwesome name="user" size={size} color={color} />
+          ),
         }}
       />
     </Tabs>

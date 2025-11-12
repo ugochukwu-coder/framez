@@ -1,6 +1,6 @@
 import { Stack } from 'expo-router';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
-import { View, Text } from 'react-native';
+import { View, Text, ActivityIndicator } from 'react-native';
 import '../../global.css';
 
 function RootLayoutNav() {
@@ -9,7 +9,8 @@ function RootLayoutNav() {
   if (isLoading) {
     return (
       <View className="flex-1 justify-center items-center bg-white">
-        <Text className="text-lg">Loading...</Text>
+        <ActivityIndicator size="large" color="#3B82F6" />
+        <Text className="text-gray-600 mt-2">Loading...</Text>
       </View>
     );
   }

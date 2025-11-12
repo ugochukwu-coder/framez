@@ -1,6 +1,6 @@
 import { FlatList, RefreshControl } from 'react-native';
 import { Post } from '../types';
-import PostItem from './Post'; // This imports the renamed PostItem
+import PostItem from './Post';
 
 interface PostListProps {
   posts: Post[];

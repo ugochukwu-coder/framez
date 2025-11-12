@@ -1,5 +1,5 @@
 import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { Post as PostType } from '../types'; // Rename the import
+import { Post as PostType } from '../types';
 import UserAvatar from './UserAvatar';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 
@@ -9,7 +9,6 @@ interface PostProps {
   onComment?: (postId: string) => void;
 }
 
-// Rename the component function to avoid conflict
 export default function PostItem({ post, onLike, onComment }: PostProps) {
   const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -23,7 +22,6 @@ export default function PostItem({ post, onLike, onComment }: PostProps) {
 
   return (
     <View className="bg-white mb-4 border-b border-gray-100 pb-4">
-      {/* Post Header */}
       <View className="flex-row items-center px-4 py-3">
         <UserAvatar user={post.user} size="sm" />
         <View className="ml-3 flex-1">
@@ -33,7 +31,6 @@ export default function PostItem({ post, onLike, onComment }: PostProps) {
         <Text className="text-gray-400 text-xs">{formatTime(post.timestamp)}</Text>
       </View>
 
-      {/* Post Image */}
       <View className="aspect-square bg-gray-100">
         <Image 
           source={{ uri: post.image_url }} 
@@ -42,7 +39,6 @@ export default function PostItem({ post, onLike, onComment }: PostProps) {
         />
       </View>
 
-      {/* Post Actions */}
       <View className="px-4 pt-3">
         <View className="flex-row space-x-4 mb-2">
           <TouchableOpacity 
@@ -62,7 +58,6 @@ export default function PostItem({ post, onLike, onComment }: PostProps) {
           </TouchableOpacity>
         </View>
 
-        {/* Post Caption */}
         <Text className="text-gray-900">
           <Text className="font-semibold">{post.user.username} </Text>
           {post.caption}
