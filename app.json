@@ -57,7 +57,8 @@
         {
           "cameraPermission": "Allow Framez to access your camera to take photos for posts."
         }
-      ]
+      ],
+      "expo-font"
     ],
     "scheme": "framez",
     "extra": {
