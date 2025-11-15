@@ -31,7 +31,11 @@ export default function PostList({
       showsVerticalScrollIndicator={false}
       refreshControl={
         onRefresh ? (
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh} 
+            tintColor="#000"
+          />
         ) : undefined
       }
       contentContainerStyle={{ paddingBottom: 20 }}

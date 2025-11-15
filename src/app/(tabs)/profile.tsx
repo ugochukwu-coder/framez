@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -15,11 +15,14 @@ import { PostList } from '../../components';
 import { Post } from '../../types';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 import { supabase } from '../../lib/supabase';
 import UserAvatar from '../../components/UserAvatar';
 
 export default function ProfileScreen() {
   const { user, signOut, updateUser } = useAuth();
+  // Toggle to quickly disable image upload functionality
+  const IMAGE_UPLOAD_ENABLED = false;
   const [userPosts, setUserPosts] = useState<Post[]>([]);
   const [uploading, setUploading] = useState(false);
   const [loadingPosts, setLoadingPosts] = useState(true);
@@ -31,13 +34,17 @@ export default function ProfileScreen() {
     bio: ''
   });
 
-  const loadUserPosts = async () => {
+  // FIXED: Added proper join to get user data for posts
+  const loadUserPosts = useCallback(async () => {
     if (!user) return;
     
     try {
       const { data: posts, error } = await supabase
         .from('posts')
-        .select('*')
+        .select(`
+          *,
+          user:users(*)
+        `)  // Join with users table to get user data
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -46,16 +53,23 @@ export default function ProfileScreen() {
       setUserPosts(posts || []);
     } catch (error) {
       console.error('Error loading posts:', error);
+      Alert.alert('Error', 'Failed to load posts');
     } finally {
       setLoadingPosts(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
-    if (user) {
+    let mounted = true;
+    
+    if (user && mounted) {
       loadUserPosts();
     }
-  }, [user]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [user, loadUserPosts]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -111,42 +125,40 @@ export default function ProfileScreen() {
   };
 
   const uploadProfileImage = async (uri: string) => {
-    if (!user) return;
+  if (!user) return;
 
-    setUploading(true);
-    try {
-      const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
-      const fileName = `avatars/${user.id}/profile.${fileExt}`;
+  setUploading(true);
+  try {
+    const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
+    const fileName = `avatars/${user.id}/profile.${fileExt}`;
+    const contentType = `image/${fileExt}`;
 
-      const formData = new FormData();
-      formData.append('file', {
-        uri: uri,
-        name: fileName,
-        type: `image/${fileExt}`,
-      } as any);
+    // Convert image to blob
+    const response = await fetch(uri);
+    const blob = await response.blob();
 
-      const { error: uploadError } = await supabase.storage
-        .from('profile-images')
-        .upload(fileName, formData, {
-          contentType: `image/${fileExt}`,
-          upsert: true
-        });
+    const { error: uploadError } = await supabase.storage
+      .from('profile-images')
+      .upload(fileName, blob, {
+        contentType: contentType,
+        upsert: true
+      });
 
-      if (uploadError) throw uploadError;
+    if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('profile-images')
-        .getPublicUrl(fileName);
+    const { data: { publicUrl } } = supabase.storage
+      .from('profile-images')
+      .getPublicUrl(fileName);
 
-      await updateUser({ avatar_url: publicUrl });
-      Alert.alert('Success', 'Profile image updated!');
-    } catch (error: any) {
-      console.error('Error uploading profile image:', error);
-      Alert.alert('Error', 'Failed to upload profile image.');
-    } finally {
-      setUploading(false);
-    }
-  };
+    await updateUser({ avatar_url: publicUrl });
+    Alert.alert('Success', 'Profile image updated!');
+  } catch (error: any) {
+    console.error('Error uploading profile image:', error);
+    Alert.alert('Error', error.message || 'Failed to upload profile image.');
+  } finally {
+    setUploading(false);
+  }
+};
 
   const removeProfileImage = async () => {
     if (!user) return;
@@ -159,6 +171,11 @@ export default function ProfileScreen() {
   };
 
   const showImagePickerOptions = () => {
+    if (!IMAGE_UPLOAD_ENABLED) {
+      Alert.alert('Disabled', 'Image uploads are disabled for debugging.');
+      return;
+    }
+
     const buttons = [
       {
         text: 'Take Photo',
@@ -211,7 +228,7 @@ export default function ProfileScreen() {
       setEditModalVisible(false);
       Alert.alert('Success', 'Profile updated!');
     } catch (error: any) {
-      Alert.alert('Error', 'Failed to update profile');
+      Alert.alert('Error', error.message || 'Failed to update profile');
     }
   };
 
@@ -274,8 +291,8 @@ export default function ProfileScreen() {
             </View>
           </TouchableOpacity>
 
-          <Text className="text-2xl font-bold text-gray-900">{user.name}</Text>
-          <Text className="text-gray-600">@{user.username}</Text>
+          <Text className="text-2xl font-bold text-gray-900">{user.name || 'No Name'}</Text>
+          <Text className="text-gray-600">@{user.username || 'No Username'}</Text>
           {user.email && (
             <Text className="text-gray-500 mt-1">{user.email}</Text>
           )}

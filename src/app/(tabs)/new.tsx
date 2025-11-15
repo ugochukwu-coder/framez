@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from 'expo-file-system';
 import { useAuth } from "../../contexts/AuthContext";
 import { Button } from "../../components";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -21,6 +22,13 @@ export default function CreatePostScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuth();
   const router = useRouter();
+
+  useEffect(() => {
+    return () => {
+      setImageUri("");
+      setCaption("");
+    };
+  }, []);
 
   const pickImage = async () => {
     try {
@@ -69,34 +77,39 @@ export default function CreatePostScreen() {
     }
   };
 
-  const uploadImageToSupabase = async (uri: string) => {
-    if (!user) throw new Error('User not authenticated');
+ const uploadImageToSupabase = async (uri: string): Promise<string> => {
+  if (!user) throw new Error('User not authenticated');
 
+  try {
     const fileExt = uri.split('.').pop()?.toLowerCase() || 'jpg';
     const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+    const contentType = `image/${fileExt}`;
 
-    const formData = new FormData();
-    formData.append('file', {
-      uri: uri,
-      name: fileName,
-      type: `image/${fileExt}`,
-    } as any);
+    // Convert image to blob format that Supabase expects
+    const response = await fetch(uri);
+    const blob = await response.blob();
 
-    const { error: uploadError } = await supabase.storage
+    // Upload using the blob directly
+    const { error: uploadError, data } = await supabase.storage
       .from('post-images')
-      .upload(fileName, formData, {
-        contentType: `image/${fileExt}`,
+      .upload(fileName, blob, {
+        contentType: contentType,
         upsert: false
       });
 
     if (uploadError) throw uploadError;
 
+    // Get public URL
     const { data: { publicUrl } } = supabase.storage
       .from('post-images')
       .getPublicUrl(fileName);
 
     return publicUrl;
-  };
+  } catch (error) {
+    console.error('Upload error:', error);
+    throw new Error('Failed to upload image');
+  }
+};
 
   const handleCreatePost = async () => {
     if (!caption.trim()) {
@@ -150,7 +163,7 @@ export default function CreatePostScreen() {
       setImageUri('');
     } catch (error: any) {
       console.error('Error creating post:', error);
-      Alert.alert('Error', 'Failed to create post. Please try again.');
+      Alert.alert('Error', error.message || 'Failed to create post. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -173,6 +186,14 @@ export default function CreatePostScreen() {
     ]);
   };
 
+  if (!user) {
+    return (
+      <View className="flex-1 justify-center items-center bg-white">
+        <Text className="text-gray-500">Please sign in to create posts</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-white">
       <View className="pt-12 px-4 pb-4 border-b border-gray-100 flex-row justify-between items-center">
@@ -190,6 +211,7 @@ export default function CreatePostScreen() {
             <TouchableOpacity
               className="border-2 border-dashed border-gray-300 rounded-lg overflow-hidden"
               onPress={showImagePickerOptions}
+              disabled={isLoading}
             >
               {imageUri ? (
                 <View className="w-full aspect-square">
@@ -211,7 +233,11 @@ export default function CreatePostScreen() {
             </TouchableOpacity>
 
             {imageUri && (
-              <TouchableOpacity className="mt-2 self-start" onPress={() => setImageUri('')}>
+              <TouchableOpacity 
+                className="mt-2 self-start" 
+                onPress={() => setImageUri('')}
+                disabled={isLoading}
+              >
                 <Text className="text-red-500 text-sm font-medium">Remove image</Text>
               </TouchableOpacity>
             )}
@@ -227,6 +253,7 @@ export default function CreatePostScreen() {
               multiline
               numberOfLines={3}
               textAlignVertical="top"
+              editable={!isLoading}
             />
           </View>
 
@@ -234,12 +261,13 @@ export default function CreatePostScreen() {
             title={isLoading ? 'Uploading...' : 'Share Post'}
             onPress={handleCreatePost}
             loading={isLoading}
-            disabled={!caption.trim() || !imageUri}
+            disabled={!caption.trim() || !imageUri || isLoading}
           />
 
           <TouchableOpacity
             className="mt-3 border border-gray-300 rounded-lg py-3"
             onPress={() => router.back()}
+            disabled={isLoading}
           >
             <Text className="text-gray-700 text-center font-semibold">Cancel</Text>
           </TouchableOpacity>

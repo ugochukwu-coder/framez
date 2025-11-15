@@ -18,11 +18,12 @@ export default function FeedScreen() {
 
   const loadPosts = async () => {
     try {
+      // FIXED: Use correct table name and join
       const { data, error } = await supabase
         .from('posts')
         .select(`
           *,
-          profiles:user_id (
+          user:profiles!user_id (
             id,
             username,
             full_name,
@@ -37,10 +38,11 @@ export default function FeedScreen() {
       if (data) {
         const formattedPosts: Post[] = data.map(item => ({
           id: item.id,
-          user: item.profiles as User,
+          user_id: item.user_id,
+          user: item.user as User,
           image_url: item.image_url,
           caption: item.caption,
-          timestamp: item.created_at,
+          created_at: item.created_at,
           likes: item.likes || 0,
           comments: item.comments || 0,
         }));
